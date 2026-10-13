@@ -1,9 +1,13 @@
+
 import json
+import os
 
 from flask import Flask, Response, render_template, request, stream_with_context
 from openai import OpenAI
 
-from config import OPENAI_API_KEY, OPENAI_MODEL
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = "gpt-5"
+
 
 
 app = Flask(

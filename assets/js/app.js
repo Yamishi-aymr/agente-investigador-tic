@@ -14,6 +14,10 @@ const resultado = document.getElementById("resultado");
 const reporte = document.getElementById("reporte");
 const error = document.getElementById("error");
 
+
+const INVESTIGAR_API_URL =
+    "https://TU-PROYECTO.vercel.app/api/investigar";
+
 let fuentesConsultadas = [];
 let reporteCompleto = "";
 
@@ -33,7 +37,7 @@ async function investigar() {
 
     try {
         const respuesta = await fetch(
-            "/api/investigar",
+            INVESTIGAR_API_URL,
             {
                 method: "POST",
                 headers: {
@@ -266,8 +270,8 @@ function agregarFuente(fuente) {
     const dominio = obtenerDominio(fuente.url);
     const titulo = fuente.titulo &&
         fuente.titulo !== fuente.url
-            ? fuente.titulo
-            : dominio;
+        ? fuente.titulo
+        : dominio;
 
     const elemento = document.createElement("article");
     elemento.className = "live-source-card";
@@ -451,14 +455,14 @@ function renderFindingsCard(body) {
         contenido = `
             <div class="findings-showcase">
                 ${hallazgos.map((hallazgo, index) => {
-                    const url = normalizarUrl(hallazgo.url);
-                    const dominio = url ? obtenerDominio(url) : "";
-                    const nombreFuente =
-                        hallazgo.fuente ||
-                        dominio ||
-                        "Fuente consultada";
+            const url = normalizarUrl(hallazgo.url);
+            const dominio = url ? obtenerDominio(url) : "";
+            const nombreFuente =
+                hallazgo.fuente ||
+                dominio ||
+                "Fuente consultada";
 
-                    return `
+            return `
                         <article class="finding-item">
 
                             <div class="finding-index">
@@ -541,7 +545,7 @@ function renderFindingsCard(body) {
 
                         </article>
                     `;
-                }).join("")}
+        }).join("")}
             </div>
         `;
     } else {
@@ -615,9 +619,9 @@ function renderCoincidenciasCard(body) {
                 </h4>
 
                 ${coincidencias.length
-                    ? `<ul>${coincidencias.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
-                    : "<p class='mb-0 text-secondary'>Sin datos disponibles.</p>"
-                }
+            ? `<ul>${coincidencias.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
+            : "<p class='mb-0 text-secondary'>Sin datos disponibles.</p>"
+        }
             </div>
 
             <div class="list-panel differences">
@@ -627,9 +631,9 @@ function renderCoincidenciasCard(body) {
                 </h4>
 
                 ${diferencias.length
-                    ? `<ul>${diferencias.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
-                    : "<p class='mb-0 text-secondary'>Sin datos disponibles.</p>"
-                }
+            ? `<ul>${diferencias.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
+            : "<p class='mb-0 text-secondary'>Sin datos disponibles.</p>"
+        }
             </div>
         </div>
     `;
