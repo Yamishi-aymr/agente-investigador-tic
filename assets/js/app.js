@@ -16,7 +16,7 @@ const error = document.getElementById("error");
 
 
 const INVESTIGAR_API_URL =
-    "https://TU-PROYECTO.vercel.app/api/investigar";
+    "https://agente-investigador-tic-fl31.vercel.app/api/investigar";
 
 let fuentesConsultadas = [];
 let reporteCompleto = "";
