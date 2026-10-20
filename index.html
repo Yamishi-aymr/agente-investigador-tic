@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -12,7 +11,7 @@
 
     <title>Radar TIC | Agente Investigador</title>
 
-    <!-- Tipografía -->
+    <!-- TIPOGRAFÍA -->
     <link rel="preconnect"
           href="https://fonts.googleapis.com">
 
@@ -24,17 +23,17 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Bootstrap -->
+    <!-- BOOTSTRAP -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
+    <!-- ICONOS -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
         rel="stylesheet">
 
-    <!-- CSS del proyecto -->
+    <!-- CSS -->
     <link
         rel="stylesheet"
         href="./assets/css/styles.css">
@@ -46,7 +45,7 @@
     <div class="page-bg"></div>
 
     <!-- =========================================
-         BARRA SUPERIOR
+         1. BARRA DE NAVEGACIÓN
     ========================================= -->
 
     <nav class="navbar navbar-expand-lg app-navbar fixed-top">
@@ -89,7 +88,7 @@
 
 
     <!-- =========================================
-         ENCABEZADO PRINCIPAL
+         2. ENCABEZADO PRINCIPAL
     ========================================= -->
 
     <header id="inicio" class="hero aurora-hero">
@@ -144,6 +143,9 @@
 
                 </div>
 
+
+                <!-- DECORACIÓN VISUAL -->
+
                 <div class="aurora-hero-decoration">
 
                     <div class="aurora-orbit">
@@ -176,593 +178,694 @@
 
 
     <!-- =========================================
-         CONTENIDO PRINCIPAL
+         3. CONTENIDO PRINCIPAL
     ========================================= -->
 
     <main class="container-fluid aurora-container main-content">
 
-        <!-- ENCABEZADO DE DASHBOARD -->
 
-        <div class="aurora-dashboard-heading">
+        <!-- =====================================
+             NAVEGACIÓN ENTRE PROCESO Y RESULTADOS
+        ====================================== -->
 
-            <div>
-
-                <span class="section-kicker">
-                    CENTRO DE INVESTIGACIÓN
-                </span>
-
-                <h2 class="aurora-dashboard-title">
-                    Panel de trabajo
-                </h2>
-
-                <p class="section-subtitle">
-                    Todas las herramientas de investigación
-                    en un mismo espacio.
-                </p>
-
-            </div>
-
-            <div class="aurora-workspace-label">
-                <i class="bi bi-stars"></i>
-                Aurora Research
-            </div>
-
-        </div>
-
-
-        <!-- =========================================
-             TARJETAS INFORMATIVAS
-        ========================================= -->
-
-        <section
-            class="aurora-feature-grid"
-            aria-label="Etapas de investigación"
+        <nav
+            class="aurora-tabs"
+            aria-label="Vistas de investigación"
         >
 
-            <article class="aurora-feature-card">
+            <!-- PESTAÑA PROCESO -->
 
-                <div class="aurora-feature-icon feature-purple">
-                    <i class="bi bi-lightbulb"></i>
-                </div>
+            <button
+                id="tabProceso"
+                class="aurora-tab active"
+                type="button"
+                aria-controls="panelProceso"
+                aria-pressed="true"
+            >
 
-                <div class="aurora-feature-content">
+                <i class="bi bi-cpu"></i>
 
-                    <span>ETAPA 01</span>
+                <span>
+                    Proceso de investigación
+                </span>
 
-                    <h3>Planificación</h3>
+            </button>
 
-                    <p>
-                        Análisis de la pregunta
-                        y organización del trabajo.
+
+            <!-- PESTAÑA RESULTADOS -->
+
+            <button
+                id="tabResultados"
+                class="aurora-tab aurora-tab-results"
+                type="button"
+                aria-controls="resultado"
+                aria-pressed="false"
+                disabled
+            >
+
+                <i class="bi bi-file-earmark-check"></i>
+
+                <span>
+                    Resultados
+                </span>
+
+                <i
+                    id="indicadorResultado"
+                    class="bi bi-check-circle-fill d-none"
+                ></i>
+
+            </button>
+
+        </nav>
+
+
+        <!-- =====================================
+             4. VISTA DE PROCESO
+        ====================================== -->
+
+        <div id="panelProceso">
+
+
+            <!-- ENCABEZADO DEL DASHBOARD -->
+
+            <div class="aurora-dashboard-heading">
+
+                <div>
+
+                    <span class="section-kicker">
+                        CENTRO DE INVESTIGACIÓN
+                    </span>
+
+                    <h2 class="aurora-dashboard-title">
+                        Panel de trabajo
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Todas las herramientas de investigación
+                        en un mismo espacio.
                     </p>
 
                 </div>
 
-                <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
-
-            </article>
-
-
-            <article class="aurora-feature-card">
-
-                <div class="aurora-feature-icon feature-blue">
-                    <i class="bi bi-globe2"></i>
+                <div class="aurora-workspace-label">
+                    <i class="bi bi-stars"></i>
+                    Aurora Research
                 </div>
 
-                <div class="aurora-feature-content">
-
-                    <span>ETAPA 02</span>
-
-                    <h3>Búsqueda web</h3>
-
-                    <p>
-                        Consulta de información
-                        y fuentes en línea.
-                    </p>
-
-                </div>
-
-                <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
-
-            </article>
+            </div>
 
 
-            <article class="aurora-feature-card">
+            <!-- =====================================
+                 5. TARJETAS INFORMATIVAS
+            ====================================== -->
 
-                <div class="aurora-feature-icon feature-rose">
-                    <i class="bi bi-diagram-3"></i>
-                </div>
+            <section
+                class="aurora-feature-grid"
+                aria-label="Etapas de investigación"
+            >
 
-                <div class="aurora-feature-content">
+                <!-- PLANIFICACIÓN -->
 
-                    <span>ETAPA 03</span>
+                <article class="aurora-feature-card">
 
-                    <h3>Comparación</h3>
+                    <div class="aurora-feature-icon feature-purple">
+                        <i class="bi bi-lightbulb"></i>
+                    </div>
 
-                    <p>
-                        Revisión de coincidencias,
-                        diferencias y tendencias.
-                    </p>
+                    <div class="aurora-feature-content">
 
-                </div>
+                        <span>ETAPA 01</span>
 
-                <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
+                        <h3>Planificación</h3>
 
-            </article>
+                        <p>
+                            Análisis de la pregunta
+                            y organización del trabajo.
+                        </p>
 
+                    </div>
 
-            <article class="aurora-feature-card">
+                    <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
 
-                <div class="aurora-feature-icon feature-green">
-                    <i class="bi bi-file-earmark-richtext"></i>
-                </div>
-
-                <div class="aurora-feature-content">
-
-                    <span>ETAPA 04</span>
-
-                    <h3>Reporte final</h3>
-
-                    <p>
-                        Presentación organizada
-                        de los hallazgos.
-                    </p>
-
-                </div>
-
-                <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
-
-            </article>
-
-        </section>
+                </article>
 
 
-        <!-- =========================================
-             DASHBOARD DE INVESTIGACIÓN
-        ========================================= -->
+                <!-- BÚSQUEDA -->
 
-        <div class="aurora-dashboard-grid">
+                <article class="aurora-feature-card">
 
-            <!-- COLUMNA PRINCIPAL -->
+                    <div class="aurora-feature-icon feature-blue">
+                        <i class="bi bi-globe2"></i>
+                    </div>
 
-            <div class="aurora-main-column">
+                    <div class="aurora-feature-content">
 
-                <!-- =================================
-                     FORMULARIO DE INVESTIGACIÓN
-                ================================= -->
+                        <span>ETAPA 02</span>
 
-                <section
-                    class="glass-card composer-card aurora-composer mb-4"
-                >
+                        <h3>Búsqueda web</h3>
 
-                    <div class="card-topbar"></div>
+                        <p>
+                            Consulta de información
+                            y fuentes en línea.
+                        </p>
 
-                    <div class="p-4 p-lg-5">
+                    </div>
 
-                        <div class="aurora-section-header">
+                    <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
 
-                            <div class="section-heading">
+                </article>
 
-                                <div class="section-icon">
-                                    <i class="bi bi-chat-square-text"></i>
+
+                <!-- COMPARACIÓN -->
+
+                <article class="aurora-feature-card">
+
+                    <div class="aurora-feature-icon feature-rose">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+
+                    <div class="aurora-feature-content">
+
+                        <span>ETAPA 03</span>
+
+                        <h3>Comparación</h3>
+
+                        <p>
+                            Revisión de coincidencias,
+                            diferencias y tendencias.
+                        </p>
+
+                    </div>
+
+                    <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
+
+                </article>
+
+
+                <!-- REPORTE -->
+
+                <article class="aurora-feature-card">
+
+                    <div class="aurora-feature-icon feature-green">
+                        <i class="bi bi-file-earmark-richtext"></i>
+                    </div>
+
+                    <div class="aurora-feature-content">
+
+                        <span>ETAPA 04</span>
+
+                        <h3>Reporte final</h3>
+
+                        <p>
+                            Presentación organizada
+                            de los hallazgos.
+                        </p>
+
+                    </div>
+
+                    <i class="bi bi-arrow-up-right aurora-feature-arrow"></i>
+
+                </article>
+
+            </section>
+
+
+            <!-- =====================================
+                 6. DASHBOARD DE INVESTIGACIÓN
+            ====================================== -->
+
+            <div class="aurora-dashboard-grid">
+
+
+                <!-- ===============================
+                     COLUMNA PRINCIPAL
+                =============================== -->
+
+                <div class="aurora-main-column">
+
+
+                    <!-- FORMULARIO -->
+
+                    <section
+                        class="glass-card composer-card aurora-composer mb-4"
+                    >
+
+                        <div class="card-topbar"></div>
+
+                        <div class="p-4 p-lg-5">
+
+                            <div class="aurora-section-header">
+
+                                <div class="section-heading">
+
+                                    <div class="section-icon">
+                                        <i class="bi bi-chat-square-text"></i>
+                                    </div>
+
+                                    <div>
+
+                                        <span class="section-kicker">
+                                            NUEVA INVESTIGACIÓN
+                                        </span>
+
+                                        <h2 class="section-title mb-1">
+                                            Pregunta de investigación
+                                        </h2>
+
+                                        <p class="section-subtitle mb-0">
+                                            ¿Qué tema te gustaría explorar?
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <span class="aurora-ai-tag">
+                                    <i class="bi bi-stars"></i>
+                                    IA
+                                </span>
+
+                            </div>
+
+
+                            <!-- CAMPO DE PREGUNTA -->
+
+                            <div class="aurora-input-area">
+
+                                <label
+                                    for="pregunta"
+                                    class="aurora-input-label"
+                                >
+                                    Describe tu consulta
+                                </label>
+
+                                <textarea
+                                    id="pregunta"
+                                    class="form-control question-box"
+                                    rows="5"
+                                    placeholder="Ejemplo: ¿Cuáles son las principales tecnologías de conectividad utilizadas actualmente en IoT y en qué escenarios conviene utilizar cada una?"
+                                ></textarea>
+
+                            </div>
+
+
+                            <!-- ACCIONES -->
+
+                            <div class="aurora-composer-bottom">
+
+                                <div class="helper-text">
+
+                                    <i class="bi bi-info-circle me-1"></i>
+
+                                    Las fuentes aparecerán durante
+                                    la investigación.
+
+                                </div>
+
+                                <button
+                                    id="btnInvestigar"
+                                    type="button"
+                                    class="btn btn-primary btn-lg action-btn"
+                                >
+
+                                    <i class="bi bi-rocket-takeoff me-2"></i>
+
+                                    Iniciar investigación
+
+                                    <i class="bi bi-arrow-right ms-2"></i>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- ===============================
+                         ACTIVIDAD DEL AGENTE
+                    =============================== -->
+
+                    <section
+                        id="actividad"
+                        class="glass-card aurora-activity mb-4 d-none"
+                    >
+
+                        <div class="p-4 p-lg-5">
+
+                            <div class="section-heading mb-4">
+
+                                <div class="section-icon pulse-icon">
+                                    <i class="bi bi-cpu"></i>
                                 </div>
 
                                 <div>
 
                                     <span class="section-kicker">
-                                        NUEVA INVESTIGACIÓN
+                                        PROCESO EN TIEMPO REAL
                                     </span>
 
                                     <h2 class="section-title mb-1">
-                                        Pregunta de investigación
+                                        Actividad del agente
                                     </h2>
 
                                     <p class="section-subtitle mb-0">
-                                        ¿Qué tema te gustaría explorar?
+                                        Observa cómo avanza tu investigación.
                                     </p>
 
                                 </div>
 
                             </div>
 
-                            <span class="aurora-ai-tag">
-                                <i class="bi bi-stars"></i>
-                                IA
+
+                            <!-- ESTADO ACTUAL -->
+
+                            <div
+                                id="estadoActual"
+                                class="status-ribbon mb-4"
+                                role="status"
+                                aria-live="polite"
+                            >
+                                Preparando la investigación...
+                            </div>
+
+
+                            <!-- ETAPAS DE INVESTIGACIÓN -->
+
+                            <div class="process-track">
+
+                                <div class="track-line"></div>
+
+
+                                <!-- ANALIZANDO -->
+
+                                <div
+                                    class="process-step"
+                                    data-etapa="analizando"
+                                >
+
+                                    <div class="process-bullet">
+                                        <i class="bi bi-lightbulb"></i>
+                                    </div>
+
+                                    <div class="process-label">
+                                        Analizar
+                                    </div>
+
+                                </div>
+
+
+                                <!-- BÚSQUEDA -->
+
+                                <div
+                                    class="process-step"
+                                    data-etapa="busqueda"
+                                >
+
+                                    <div class="process-bullet">
+                                        <i class="bi bi-globe2"></i>
+                                    </div>
+
+                                    <div class="process-label">
+                                        Buscar
+                                    </div>
+
+                                </div>
+
+
+                                <!-- REVISIÓN -->
+
+                                <div
+                                    class="process-step"
+                                    data-etapa="revision"
+                                >
+
+                                    <div class="process-bullet">
+                                        <i class="bi bi-journal-text"></i>
+                                    </div>
+
+                                    <div class="process-label">
+                                        Revisar
+                                    </div>
+
+                                </div>
+
+
+                                <!-- FINALIZANDO -->
+
+                                <div
+                                    class="process-step"
+                                    data-etapa="finalizando"
+                                >
+
+                                    <div class="process-bullet">
+                                        <i class="bi bi-check2-square"></i>
+                                    </div>
+
+                                    <div class="process-label">
+                                        Sintetizar
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- BORRADOR EN VIVO -->
+
+                            <div
+                                id="previewReporte"
+                                class="preview-panel mt-4"
+                            >
+
+                                <div class="preview-header">
+
+                                    <i class="bi bi-file-earmark-text me-2"></i>
+
+                                    Borrador del reporte
+
+                                </div>
+
+                                <div
+                                    id="previewContent"
+                                    class="preview-content"
+                                >
+
+                                    El borrador aparecerá aquí mientras
+                                    el agente redacta.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- MENSAJES DE ERROR -->
+
+                    <section
+                        id="error"
+                        class="alert alert-danger shadow-sm d-none"
+                        role="alert"
+                    ></section>
+
+                </div>
+
+
+                <!-- ===============================
+                     COLUMNA LATERAL
+                =============================== -->
+
+                <aside class="aurora-side-column">
+
+
+                    <!-- TARJETA DEL AGENTE -->
+
+                    <section class="aurora-agent-card">
+
+                        <div class="aurora-agent-glow"></div>
+
+                        <div class="aurora-agent-icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+
+                        <span class="aurora-agent-kicker">
+                            INTELIGENCIA ARTIFICIAL
+                        </span>
+
+                        <h3>
+                            Tu asistente de investigación.
+                        </h3>
+
+                        <p>
+                            Convierte preguntas en investigaciones
+                            organizadas con búsqueda de información,
+                            análisis y síntesis.
+                        </p>
+
+                        <div class="aurora-agent-status">
+
+                            <i class="bi bi-check-circle"></i>
+
+                            Investigación asistida con IA
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- ===============================
+                         FUENTES EN TIEMPO REAL
+                    =============================== -->
+
+                    <section class="sources-sidebar aurora-source-widget">
+
+                        <div class="sidebar-header">
+
+                            <div>
+
+                                <span class="section-kicker">
+                                    EVIDENCIA WEB
+                                </span>
+
+                                <h3 class="h5 mb-1">
+
+                                    <i class="bi bi-globe2 me-2"></i>
+
+                                    Fuentes detectadas
+
+                                </h3>
+
+                                <p class="section-subtitle mb-0">
+
+                                    Sitios consultados durante
+                                    la investigación.
+
+                                </p>
+
+                            </div>
+
+                            <span
+                                id="contadorFuentes"
+                                class="counter-pill"
+                            >
+                                0
                             </span>
 
                         </div>
 
 
-                        <!-- CAMPO ORIGINAL -->
+                        <!-- FUENTES EN VIVO -->
 
-                        <div class="aurora-input-area">
+                        <div
+                            id="fuentesEnVivo"
+                            class="live-sources"
+                            aria-live="polite"
+                        >
 
-                            <label
-                                for="pregunta"
-                                class="aurora-input-label"
-                            >
-                                Describe tu consulta
-                            </label>
-
-                            <textarea
-                                id="pregunta"
-                                class="form-control question-box"
-                                rows="5"
-                                placeholder="Ejemplo: ¿Cuáles son las principales tecnologías de conectividad utilizadas actualmente en IoT y en qué escenarios conviene utilizar cada una?"
-                            ></textarea>
-
-                        </div>
-
-
-                        <!-- ACCIONES ORIGINALES -->
-
-                        <div class="aurora-composer-bottom">
-
-                            <div class="helper-text">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Las fuentes aparecerán durante
-                                la investigación.
-                            </div>
-
-                            <button
-                                id="btnInvestigar"
-                                type="button"
-                                class="btn btn-primary btn-lg action-btn"
+                            <div
+                                id="sinFuentes"
+                                class="empty-sources"
                             >
 
-                                <i class="bi bi-rocket-takeoff me-2"></i>
+                                <div class="aurora-empty-icon">
+                                    <i class="bi bi-search"></i>
+                                </div>
 
-                                Iniciar investigación
+                                <strong>
+                                    Esperando fuentes
+                                </strong>
 
-                                <i class="bi bi-arrow-right ms-2"></i>
+                                <p class="mb-0">
 
-                            </button>
+                                    Las fuentes aparecerán aquí
+                                    conforme el agente vaya
+                                    consultándolas.
 
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- =================================
-                     ACTIVIDAD DEL AGENTE
-                ================================= -->
-
-                <section
-                    id="actividad"
-                    class="glass-card aurora-activity mb-4 d-none"
-                >
-
-                    <div class="p-4 p-lg-5">
-
-                        <div class="section-heading mb-4">
-
-                            <div class="section-icon pulse-icon">
-                                <i class="bi bi-cpu"></i>
-                            </div>
-
-                            <div>
-
-                                <span class="section-kicker">
-                                    PROCESO EN TIEMPO REAL
-                                </span>
-
-                                <h2 class="section-title mb-1">
-                                    Actividad del agente
-                                </h2>
-
-                                <p class="section-subtitle mb-0">
-                                    Observa cómo avanza
-                                    tu investigación.
                                 </p>
 
                             </div>
 
                         </div>
 
-
-                        <!-- ESTADO ACTUAL -->
-
-                        <div
-                            id="estadoActual"
-                            class="status-ribbon mb-4"
-                            role="status"
-                            aria-live="polite"
-                        >
-                            Preparando la investigación...
-                        </div>
+                    </section>
 
 
-                        <!-- SEGUIMIENTO DE ETAPAS -->
+                    <!-- ===============================
+                         GUÍA DEL AGENTE
+                    =============================== -->
 
-                        <div class="process-track">
+                    <section class="aurora-guide-card">
 
-                            <div class="track-line"></div>
+                        <div class="aurora-guide-header">
 
-                            <div
-                                class="process-step"
-                                data-etapa="analizando"
-                            >
-
-                                <div class="process-bullet">
-                                    <i class="bi bi-lightbulb"></i>
-                                </div>
-
-                                <div class="process-label">
-                                    Analizar
-                                </div>
-
+                            <div class="aurora-guide-icon">
+                                <i class="bi bi-diagram-3"></i>
                             </div>
 
+                            <div>
 
-                            <div
-                                class="process-step"
-                                data-etapa="busqueda"
-                            >
+                                <span class="section-kicker">
+                                    METODOLOGÍA
+                                </span>
 
-                                <div class="process-bullet">
-                                    <i class="bi bi-globe2"></i>
-                                </div>
-
-                                <div class="process-label">
-                                    Buscar
-                                </div>
-
-                            </div>
-
-
-                            <div
-                                class="process-step"
-                                data-etapa="revision"
-                            >
-
-                                <div class="process-bullet">
-                                    <i class="bi bi-journal-text"></i>
-                                </div>
-
-                                <div class="process-label">
-                                    Revisar
-                                </div>
-
-                            </div>
-
-
-                            <div
-                                class="process-step"
-                                data-etapa="finalizando"
-                            >
-
-                                <div class="process-bullet">
-                                    <i class="bi bi-check2-square"></i>
-                                </div>
-
-                                <div class="process-label">
-                                    Sintetizar
-                                </div>
+                                <h3>
+                                    Flujo del agente
+                                </h3>
 
                             </div>
 
                         </div>
 
 
-                        <!-- VISTA PREVIA ORIGINAL -->
+                        <div class="mini-steps aurora-guide-steps">
 
-                        <div
-                            id="previewReporte"
-                            class="preview-panel mt-4"
-                        >
-
-                            <div class="preview-header">
-
-                                <i class="bi bi-file-earmark-text me-2"></i>
-
-                                Borrador del reporte
-
+                            <div>
+                                <span>1</span>
+                                Analiza la pregunta
                             </div>
 
-                            <div
-                                id="previewContent"
-                                class="preview-content"
-                            >
-                                El borrador aparecerá aquí mientras
-                                el agente redacta.
+                            <div>
+                                <span>2</span>
+                                Busca fuentes
+                            </div>
+
+                            <div>
+                                <span>3</span>
+                                Contrasta evidencia
+                            </div>
+
+                            <div>
+                                <span>4</span>
+                                Genera reporte
                             </div>
 
                         </div>
 
-                    </div>
+                    </section>
 
-                </section>
-
-
-                <!-- =================================
-                     MENSAJES DE ERROR
-                ================================= -->
-
-                <section
-                    id="error"
-                    class="alert alert-danger shadow-sm d-none"
-                    role="alert"
-                ></section>
+                </aside>
 
             </div>
 
-
-            <!-- =====================================
-                 COLUMNA LATERAL
-            ====================================== -->
-
-            <aside class="aurora-side-column">
-
-                <!-- PANEL DEL AGENTE -->
-
-                <section class="aurora-agent-card">
-
-                    <div class="aurora-agent-glow"></div>
-
-                    <div class="aurora-agent-icon">
-                        <i class="bi bi-stars"></i>
-                    </div>
-
-                    <span class="aurora-agent-kicker">
-                        INTELIGENCIA ARTIFICIAL
-                    </span>
-
-                    <h3>
-                        Tu asistente de investigación.
-                    </h3>
-
-                    <p>
-                        Convierte preguntas en investigaciones
-                        organizadas con búsqueda de información,
-                        análisis y síntesis.
-                    </p>
-
-                    <div class="aurora-agent-status">
-
-                        <i class="bi bi-check-circle"></i>
-
-                        Investigación asistida con IA
-
-                    </div>
-
-                </section>
-
-
-                <!-- FUENTES EN TIEMPO REAL -->
-
-                <section class="sources-sidebar aurora-source-widget">
-
-                    <div class="sidebar-header">
-
-                        <div>
-
-                            <span class="section-kicker">
-                                EVIDENCIA WEB
-                            </span>
-
-                            <h3 class="h5 mb-1">
-                                <i class="bi bi-globe2 me-2"></i>
-                                Fuentes detectadas
-                            </h3>
-
-                            <p class="section-subtitle mb-0">
-                                Sitios consultados durante
-                                la investigación.
-                            </p>
-
-                        </div>
-
-                        <span
-                            id="contadorFuentes"
-                            class="counter-pill"
-                        >
-                            0
-                        </span>
-
-                    </div>
-
-
-                    <!-- CONTENEDOR ORIGINAL -->
-
-                    <div
-                        id="fuentesEnVivo"
-                        class="live-sources"
-                        aria-live="polite"
-                    >
-
-                        <div
-                            id="sinFuentes"
-                            class="empty-sources"
-                        >
-
-                            <div class="aurora-empty-icon">
-                                <i class="bi bi-search"></i>
-                            </div>
-
-                            <strong>
-                                Esperando fuentes
-                            </strong>
-
-                            <p class="mb-0">
-                                Las fuentes aparecerán aquí
-                                conforme el agente vaya
-                                consultándolas.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- PANEL DE INFORMACIÓN -->
-
-                <section class="aurora-guide-card">
-
-                    <div class="aurora-guide-header">
-
-                        <div class="aurora-guide-icon">
-                            <i class="bi bi-diagram-3"></i>
-                        </div>
-
-                        <div>
-
-                            <span class="section-kicker">
-                                METODOLOGÍA
-                            </span>
-
-                            <h3>
-                                Flujo del agente
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                    <div class="mini-steps aurora-guide-steps">
-
-                        <div>
-                            <span>1</span>
-                            Analiza la pregunta
-                        </div>
-
-                        <div>
-                            <span>2</span>
-                            Busca fuentes
-                        </div>
-
-                        <div>
-                            <span>3</span>
-                            Contrasta evidencia
-                        </div>
-
-                        <div>
-                            <span>4</span>
-                            Genera reporte
-                        </div>
-
-                    </div>
-
-                </section>
-
-            </aside>
-
         </div>
+        <!-- FIN DE panelProceso -->
 
 
-        <!-- =========================================
-             RESULTADOS DE INVESTIGACIÓN
-        ========================================= -->
+        <!-- =====================================
+             7. VISTA DE RESULTADOS
+        ====================================== -->
 
         <section
             id="resultado"
             class="aurora-results d-none"
+            aria-label="Resultados de investigación"
         >
 
-            <!-- ENCABEZADO DEL REPORTE -->
+            <!-- ENCABEZADO MORADO -->
 
             <div class="result-top aurora-result-top">
 
@@ -777,8 +880,10 @@
                     </h2>
 
                     <p class="section-subtitle mb-0">
+
                         Resultado generado a partir de la
                         búsqueda, revisión y análisis de fuentes.
+
                     </p>
 
                 </div>
@@ -794,7 +899,9 @@
             </div>
 
 
-            <!-- REPORTE ORIGINAL -->
+            <!-- ===============================
+                 REPORTE GENERADO POR JAVASCRIPT
+            =============================== -->
 
             <div
                 id="reporte"
@@ -802,13 +909,11 @@
             ></div>
 
 
-            <!-- =================================
-                 FUENTES FINALES
-            ================================= -->
+            <!-- ===============================
+                 REFERENCIAS FINALES
+            =============================== -->
 
-            <section
-                class="glass-card aurora-final-sources mt-4"
-            >
+            <section class="glass-card aurora-final-sources mt-4">
 
                 <div class="p-4 p-lg-5">
 
@@ -831,8 +936,10 @@
                                 </h3>
 
                                 <p class="section-subtitle mb-0">
+
                                     URLs detectadas mediante la búsqueda
                                     y las citas del reporte.
+
                                 </p>
 
                             </div>
@@ -849,7 +956,7 @@
                     </div>
 
 
-                    <!-- FUENTES FINALES ORIGINALES -->
+                    <!-- FUENTES FINALES -->
 
                     <div
                         id="fuentesFinales"
@@ -864,11 +971,17 @@
 
     </main>
 
+
+    <!-- =========================================
+         8. FOOTER ACADÉMICO
+    ========================================= -->
+
     <footer class="footer aurora-footer">
 
         <div class="container-fluid aurora-container">
 
             <div class="aurora-footer-main">
+
 
                 <!-- INFORMACIÓN DEL PROYECTO -->
 
@@ -893,27 +1006,40 @@
                     </div>
 
                     <p class="aurora-footer-description">
+
                         Plataforma académica de investigación
                         asistida por inteligencia artificial,
                         orientada al análisis, comparación
                         y síntesis de información tecnológica.
+
                     </p>
 
                     <div class="aurora-footer-tags">
 
                         <span>
+
                             <i class="bi bi-cpu"></i>
+
                             Inteligencia Artificial
+
                         </span>
 
                         <span>
+
                             <i class="bi bi-globe2"></i>
+
                             Investigación Web
+
                         </span>
 
                     </div>
 
                 </div>
+
+
+                <!-- =================================
+                     DATOS DEL DESARROLLADOR
+                ================================= -->
 
                 <div class="aurora-footer-developer">
 
@@ -921,12 +1047,17 @@
                         DESARROLLADO POR
                     </span>
 
+                    <!-- NOMBRE COMPLETO -->
+
                     <h3 class="aurora-developer-name">
                         Alicia Yamileth Mariano Reséndiz
                     </h3>
 
 
                     <div class="aurora-developer-details">
+
+
+                        <!-- NÚMERO DE CONTROL -->
 
                         <div class="aurora-developer-detail">
 
@@ -948,6 +1079,9 @@
 
                         </div>
 
+
+                        <!-- CARRERA -->
+
                         <div class="aurora-developer-detail">
 
                             <div class="aurora-detail-icon">
@@ -961,7 +1095,8 @@
                                 </span>
 
                                 <strong>
-                                    Ingeniería en Tecnologías de la Información y Comunicaciones
+                                    Ingeniería en Tecnologías de la
+                                    Información y Comunicaciones
                                 </strong>
 
                             </div>
@@ -973,7 +1108,9 @@
                 </div>
 
 
-                <!-- INFORMACIÓN ACADÉMICA -->
+                <!-- =================================
+                     INFORMACIÓN ACADÉMICA
+                ================================= -->
 
                 <div class="aurora-footer-academic">
 
@@ -981,11 +1118,15 @@
                         INFORMACIÓN ACADÉMICA
                     </span>
 
+
+                    <!-- INSTITUCIÓN -->
+
                     <div class="aurora-academic-item">
 
                         <i class="bi bi-bank"></i>
 
                         <div>
+
                             <strong>
                                 Tecnológico Nacional de México
                             </strong>
@@ -993,15 +1134,20 @@
                             <span>
                                 Instituto Tecnológico de Pachuca
                             </span>
+
                         </div>
 
                     </div>
+
+
+                    <!-- MATERIA -->
 
                     <div class="aurora-academic-item">
 
                         <i class="bi bi-book"></i>
 
                         <div>
+
                             <strong>
                                 Inteligencia Artificial
                                 Aplicada a las TIC
@@ -1010,6 +1156,7 @@
                             <span>
                                 Práctica 2.2
                             </span>
+
                         </div>
 
                     </div>
@@ -1019,7 +1166,9 @@
             </div>
 
 
-            <!-- BARRA INFERIOR -->
+            <!-- =================================
+                 BARRA INFERIOR DEL FOOTER
+            ================================= -->
 
             <div class="aurora-footer-bottom">
 
@@ -1028,11 +1177,21 @@
                     Proyecto académico.
                 </span>
 
+                <span>
+                    <i class="bi bi-stars me-1"></i>
+                    Investigación inteligente
+                </span>
+
             </div>
 
         </div>
 
     </footer>
+
+
+    <!-- =========================================
+         9. JAVASCRIPT
+    ========================================= -->
 
     <script src="./assets/js/app.js"></script>
 

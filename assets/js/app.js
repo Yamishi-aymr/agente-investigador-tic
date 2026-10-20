@@ -1,3 +1,14 @@
+
+/* ==========================================================
+   RADAR TIC — AURORA RESEARCH
+   Agente Investigador con IA
+   Streaming SSE + dashboard con pestañas
+   ========================================================== */
+
+/* =========================
+   1. ELEMENTOS DEL DOM
+========================= */
+
 const btnInvestigar = document.getElementById("btnInvestigar");
 const pregunta = document.getElementById("pregunta");
 
@@ -14,6 +25,16 @@ const resultado = document.getElementById("resultado");
 const reporte = document.getElementById("reporte");
 const error = document.getElementById("error");
 
+/* Navegación Aurora */
+
+const tabProceso = document.getElementById("tabProceso");
+const tabResultados = document.getElementById("tabResultados");
+const panelProceso = document.getElementById("panelProceso");
+const indicadorResultado = document.getElementById("indicadorResultado");
+
+/* =========================
+   2. CONFIGURACIÓN
+========================= */
 
 const INVESTIGAR_API_URL =
     "https://agente-investigador-tic-fl31.vercel.app/api/investigar";
@@ -21,21 +42,161 @@ const INVESTIGAR_API_URL =
 let fuentesConsultadas = [];
 let reporteCompleto = "";
 
+let reporteDisponible = false;
+let investigacionEnCurso = false;
+let flujoCompletado = false;
+
+/* =========================
+   3. NAVEGACIÓN AURORA
+========================= */
+
+function navegacionDisponible() {
+    return Boolean(
+        tabProceso &&
+        tabResultados &&
+        panelProceso
+    );
+}
+
+function mostrarVista(vista, desplazar = true) {
+
+    const mostrarResultados =
+        vista === "resultados" && reporteDisponible;
+
+    if (navegacionDisponible()) {
+
+        panelProceso.classList.toggle(
+            "d-none",
+            mostrarResultados
+        );
+
+        resultado.classList.toggle(
+            "d-none",
+            !mostrarResultados
+        );
+
+        tabProceso.classList.toggle(
+            "active",
+            !mostrarResultados
+        );
+
+        tabResultados.classList.toggle(
+            "active",
+            mostrarResultados
+        );
+
+        tabProceso.setAttribute(
+            "aria-pressed",
+            String(!mostrarResultados)
+        );
+
+        tabResultados.setAttribute(
+            "aria-pressed",
+            String(mostrarResultados)
+        );
+
+        if (desplazar) {
+            const barra = document.querySelector(
+                ".aurora-tabs"
+            );
+
+            if (barra) {
+                barra.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+        }
+
+    } else {
+
+        /* Compatibilidad si todavía no hay pestañas */
+
+        resultado.classList.toggle(
+            "d-none",
+            !mostrarResultados
+        );
+
+        if (mostrarResultados && desplazar) {
+            resultado.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }
+}
+
+function reiniciarNavegacion() {
+
+    reporteDisponible = false;
+
+    if (tabResultados) {
+        tabResultados.disabled = true;
+    }
+
+    if (indicadorResultado) {
+        indicadorResultado.classList.add("d-none");
+    }
+
+    mostrarVista("proceso", false);
+}
+
+function habilitarResultados() {
+
+    reporteDisponible = true;
+
+    if (tabResultados) {
+        tabResultados.disabled = false;
+    }
+
+    if (indicadorResultado) {
+        indicadorResultado.classList.remove("d-none");
+    }
+
+    mostrarVista("resultados", true);
+}
+
+if (tabProceso) {
+    tabProceso.addEventListener("click", () => {
+        mostrarVista("proceso");
+    });
+}
+
+if (tabResultados) {
+    tabResultados.addEventListener("click", () => {
+        if (reporteDisponible) {
+            mostrarVista("resultados");
+        }
+    });
+}
+
+reiniciarNavegacion();
+
+/* =========================
+   4. INICIAR INVESTIGACIÓN
+========================= */
 
 btnInvestigar.addEventListener("click", investigar);
 
-
 async function investigar() {
+
+    if (investigacionEnCurso) {
+        return;
+    }
+
     const textoPregunta = pregunta.value.trim();
 
     if (!textoPregunta) {
-        mostrarError("Escribe una pregunta de investigación.");
+        mostrarError(
+            "Escribe una pregunta de investigación."
+        );
         return;
     }
 
     prepararInterfaz();
 
     try {
+
         const respuesta = await fetch(
             INVESTIGAR_API_URL,
             {
@@ -49,6 +210,12 @@ async function investigar() {
             }
         );
 
+        if (!respuesta.ok) {
+            throw new Error(
+                `Error del servidor (${respuesta.status}).`
+            );
+        }
+
         if (!respuesta.body) {
             throw new Error(
                 "El navegador no pudo abrir el flujo de datos."
@@ -57,123 +224,58 @@ async function investigar() {
 
         await procesarStream(respuesta);
 
+        if (!flujoCompletado) {
+            throw new Error(
+                "La conexión terminó antes de completar la investigación."
+            );
+        }
+
     } catch (err) {
-        mostrarError(err.message);
+
+        mostrarError(
+            err.message || "No se pudo realizar la investigación."
+        );
+
     } finally {
+
+        investigacionEnCurso = false;
         btnInvestigar.disabled = false;
+
     }
 }
 
-
-async function procesarStream(respuesta) {
-    const reader = respuesta.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-
-    let buffer = "";
-
-    while (true) {
-        const { value, done } = await reader.read();
-
-        if (done) {
-            break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-
-        const bloques = buffer.split("\n\n");
-        buffer = bloques.pop();
-
-        for (const bloque of bloques) {
-            if (!bloque.trim()) {
-                continue;
-            }
-
-            procesarEventoSSE(bloque);
-        }
-    }
-
-    if (buffer.trim()) {
-        procesarEventoSSE(buffer);
-    }
-}
-
-
-function procesarEventoSSE(bloque) {
-    const lineas = bloque.split("\n");
-
-    let tipo = "message";
-    let data = "";
-
-    lineas.forEach(linea => {
-        if (linea.startsWith("event:")) {
-            tipo = linea.substring(6).trim();
-        }
-
-        if (linea.startsWith("data:")) {
-            data += linea.substring(5).trim();
-        }
-    });
-
-    if (!data) {
-        return;
-    }
-
-    let contenido;
-
-    try {
-        contenido = JSON.parse(data);
-    } catch {
-        return;
-    }
-
-    if (tipo === "estado") {
-        actualizarEstado(
-            contenido.etapa,
-            contenido.mensaje
-        );
-    }
-
-    if (tipo === "fuente") {
-        agregarFuente(contenido);
-    }
-
-    if (tipo === "texto") {
-        reporteCompleto += contenido.delta;
-        actualizarPreview(reporteCompleto);
-    }
-
-    if (tipo === "completado") {
-        reporteCompleto = contenido.reporte || reporteCompleto;
-
-        actualizarEstado(
-            "finalizando",
-            contenido.mensaje || "Investigación completada."
-        );
-
-        finalizarFlujo();
-    }
-
-    if (tipo === "error") {
-        const mensaje = contenido.detalle
-            ? `${contenido.mensaje} ${contenido.detalle}`
-            : contenido.mensaje;
-
-        mostrarError(mensaje);
-    }
-}
-
+/* =========================
+   5. PREPARAR INTERFAZ
+========================= */
 
 function prepararInterfaz() {
+
     fuentesConsultadas = [];
     reporteCompleto = "";
 
+    investigacionEnCurso = true;
+    flujoCompletado = false;
+
+    reiniciarNavegacion();
+
     error.classList.add("d-none");
-    resultado.classList.add("d-none");
+
     actividad.classList.remove("d-none");
 
     fuentesEnVivo.innerHTML = `
         <div id="sinFuentes" class="empty-sources">
-            Las fuentes aparecerán aquí conforme el agente vaya consultándolas.
+
+            <div class="aurora-empty-icon">
+                <i class="bi bi-search"></i>
+            </div>
+
+            <strong>Esperando fuentes</strong>
+
+            <p class="mb-0">
+                Las fuentes aparecerán aquí conforme el
+                agente vaya consultándolas.
+            </p>
+
         </div>
     `;
 
@@ -194,9 +296,144 @@ function prepararInterfaz() {
     btnInvestigar.disabled = true;
 }
 
+/* =========================
+   6. PROCESAMIENTO SSE
+========================= */
+
+async function procesarStream(respuesta) {
+
+    const reader = respuesta.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    let buffer = "";
+
+    while (true) {
+
+        const { value, done } = await reader.read();
+
+        if (done) {
+            break;
+        }
+
+        buffer += decoder.decode(value, {
+            stream: true
+        });
+
+        buffer = buffer.replace(/\r\n/g, "\n");
+
+        const bloques = buffer.split("\n\n");
+
+        buffer = bloques.pop();
+
+        for (const bloque of bloques) {
+
+            if (!bloque.trim()) {
+                continue;
+            }
+
+            procesarEventoSSE(bloque);
+        }
+    }
+
+    buffer += decoder.decode();
+
+    if (buffer.trim()) {
+        procesarEventoSSE(buffer);
+    }
+}
+
+/* =========================
+   7. EVENTOS DEL SERVIDOR
+========================= */
+
+function procesarEventoSSE(bloque) {
+
+    const lineas = bloque.split("\n");
+
+    let tipo = "message";
+    const datos = [];
+
+    lineas.forEach(linea => {
+
+        if (linea.startsWith("event:")) {
+            tipo = linea.substring(6).trim();
+        }
+
+        if (linea.startsWith("data:")) {
+            datos.push(linea.substring(5).trimStart());
+        }
+    });
+
+    const data = datos.join("\n");
+
+    if (!data) {
+        return;
+    }
+
+    let contenido;
+
+    try {
+        contenido = JSON.parse(data);
+    } catch {
+        return;
+    }
+
+    if (tipo === "estado") {
+
+        actualizarEstado(
+            contenido.etapa,
+            contenido.mensaje
+        );
+    }
+
+    if (tipo === "fuente") {
+        agregarFuente(contenido);
+    }
+
+    if (tipo === "texto") {
+
+        reporteCompleto += contenido.delta || "";
+
+        actualizarPreview(reporteCompleto);
+    }
+
+    if (tipo === "completado") {
+
+        if (flujoCompletado) {
+            return;
+        }
+
+        reporteCompleto =
+            contenido.reporte || reporteCompleto;
+
+        actualizarEstado(
+            "finalizando",
+            contenido.mensaje ||
+            "Investigación completada."
+        );
+
+        flujoCompletado = true;
+
+        finalizarFlujo();
+    }
+
+    if (tipo === "error") {
+
+        const mensaje = contenido.detalle
+            ? `${contenido.mensaje} ${contenido.detalle}`
+            : contenido.mensaje;
+
+        mostrarError(mensaje);
+    }
+}
+
+/* =========================
+   8. ESTADO DEL AGENTE
+========================= */
 
 function actualizarEstado(etapa, mensaje) {
-    estadoActual.textContent = mensaje;
+
+    estadoActual.textContent = mensaje || "";
 
     const pasos = Array.from(
         document.querySelectorAll(".process-step")
@@ -212,11 +449,15 @@ function actualizarEstado(etapa, mensaje) {
     const indiceActual = orden.indexOf(etapa);
 
     pasos.forEach(paso => {
+
         const indicePaso = orden.indexOf(
             paso.dataset.etapa
         );
 
-        paso.classList.remove("active", "complete");
+        paso.classList.remove(
+            "active",
+            "complete"
+        );
 
         if (indicePaso < indiceActual) {
             paso.classList.add("complete");
@@ -228,9 +469,14 @@ function actualizarEstado(etapa, mensaje) {
     });
 }
 
+/* =========================
+   9. BORRADOR EN VIVO
+========================= */
 
 function actualizarPreview(texto) {
-    const preview = limpiarMarkdownBasico(texto).trim();
+
+    const preview =
+        limpiarMarkdownBasico(texto).trim();
 
     if (!preview) {
         return;
@@ -241,11 +487,17 @@ function actualizarPreview(texto) {
         : preview;
 
     previewContent.textContent = resumen;
-    previewContent.scrollTop = previewContent.scrollHeight;
+
+    previewContent.scrollTop =
+        previewContent.scrollHeight;
 }
 
+/* =========================
+   10. FUENTES EN VIVO
+========================= */
 
 function agregarFuente(fuente) {
+
     if (!fuente.url) {
         return;
     }
@@ -268,12 +520,14 @@ function agregarFuente(fuente) {
     }
 
     const dominio = obtenerDominio(fuente.url);
-    const titulo = fuente.titulo &&
-        fuente.titulo !== fuente.url
-        ? fuente.titulo
-        : dominio;
+
+    const titulo =
+        fuente.titulo && fuente.titulo !== fuente.url
+            ? fuente.titulo
+            : dominio;
 
     const elemento = document.createElement("article");
+
     elemento.className = "live-source-card";
 
     elemento.innerHTML = `
@@ -298,20 +552,30 @@ function agregarFuente(fuente) {
     `;
 
     fuentesEnVivo.appendChild(elemento);
-    fuentesEnVivo.scrollTop = fuentesEnVivo.scrollHeight;
+
+    fuentesEnVivo.scrollTop =
+        fuentesEnVivo.scrollHeight;
+
     actualizarContadores();
 }
 
-
 function actualizarContadores() {
+
     const total = fuentesConsultadas.length;
+
     contadorFuentes.textContent = String(total);
+
     contadorFuentesFinal.textContent = String(total);
 }
 
+/* =========================
+   11. FINALIZAR INVESTIGACIÓN
+========================= */
 
 function finalizarFlujo() {
-    const pasos = document.querySelectorAll(".process-step");
+
+    const pasos =
+        document.querySelectorAll(".process-step");
 
     pasos.forEach(paso => {
         paso.classList.remove("active");
@@ -323,118 +587,205 @@ function finalizarFlujo() {
         Investigación completada.
     `;
 
+    /* Generar el reporte completo */
+
     renderizarReporteFinal(reporteCompleto);
+
     renderizarFuentesFinales();
 
-    resultado.classList.remove("d-none");
-    resultado.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
+    /* NUEVO: abrir la pestaña de resultados */
+
+    habilitarResultados();
 }
 
+/* =========================
+   12. REPORTE FINAL
+========================= */
 
 function renderizarReporteFinal(markdown) {
+
     const parsed = parseStructuredMarkdown(markdown);
 
     let html = `
         <section class="report-hero">
+
             <div class="eyebrow text-white-50 mb-2">
                 REPORTE FINAL
             </div>
+
             <div class="report-title">
-                ${escaparHTML(parsed.title || "Reporte de investigación")}
+                ${escaparHTML(
+                    parsed.title || "Reporte de investigación"
+                )}
             </div>
+
             <div class="report-lead">
-                ${escaparHTML(extraerResumen(parsed.sections["1. Pregunta de investigación"] || ""))}
+                ${escaparHTML(
+                    extraerResumen(
+                        parsed.sections[
+                            "1. Pregunta de investigación"
+                        ] || ""
+                    )
+                )}
             </div>
+
         </section>
     `;
 
-    const preguntaBody = parsed.sections["1. Pregunta de investigación"] || "";
+    const preguntaBody =
+        parsed.sections[
+            "1. Pregunta de investigación"
+        ] || "";
+
     html += `
         <section class="report-grid-1">
-            ${renderCard("bi-question-circle", "Pregunta de investigación", markdownToBasicHtml(preguntaBody))}
+            ${renderCard(
+                "bi-question-circle",
+                "Pregunta de investigación",
+                markdownToBasicHtml(preguntaBody)
+            )}
         </section>
     `;
 
-    const planBody = parsed.sections["2. Plan de investigación"] || "";
+    const planBody =
+        parsed.sections[
+            "2. Plan de investigación"
+        ] || "";
+
     html += `
         <section class="report-grid-1">
             ${renderPlanCard(planBody)}
         </section>
     `;
 
-    const hallazgosBody = parsed.sections["3. Hallazgos principales"] || "";
+    const hallazgosBody =
+        parsed.sections[
+            "3. Hallazgos principales"
+        ] || "";
+
     html += `
         <section class="report-grid-1">
             ${renderFindingsCard(hallazgosBody)}
         </section>
     `;
 
-    const comparacionBody = parsed.sections["4. Comparación de información"] || "";
+    const comparacionBody =
+        parsed.sections[
+            "4. Comparación de información"
+        ] || "";
+
     html += `
         <section class="report-grid-1">
             ${renderComparisonCard(comparacionBody)}
         </section>
     `;
 
-    const coincidenciasBody = parsed.sections["5. Coincidencias y diferencias entre fuentes"] || "";
-    const tendenciasBody = parsed.sections["6. Tendencias identificadas"] || "";
+    const coincidenciasBody =
+        parsed.sections[
+            "5. Coincidencias y diferencias entre fuentes"
+        ] || "";
+
+    const tendenciasBody =
+        parsed.sections[
+            "6. Tendencias identificadas"
+        ] || "";
+
     html += `
         <section class="report-grid-2">
-            ${renderCoincidenciasCard(coincidenciasBody)}
-            ${renderTrendsCard(tendenciasBody)}
+
+            ${renderCoincidenciasCard(
+                coincidenciasBody
+            )}
+
+            ${renderTrendsCard(
+                tendenciasBody
+            )}
+
         </section>
     `;
 
-    const conclusionesBody = parsed.sections["7. Conclusiones"] || "";
+    const conclusionesBody =
+        parsed.sections[
+            "7. Conclusiones"
+        ] || "";
+
     html += `
         <section class="report-grid-1">
-            ${renderCard("bi-patch-check", "Conclusiones", markdownToBasicHtml(conclusionesBody))}
+
+            ${renderCard(
+                "bi-patch-check",
+                "Conclusiones",
+                markdownToBasicHtml(conclusionesBody)
+            )}
+
         </section>
     `;
 
     reporte.innerHTML = html;
 }
 
+/* =========================
+   13. TARJETA GENÉRICA
+========================= */
 
 function renderCard(icono, titulo, bodyHtml) {
+
     return `
         <article class="report-card">
+
             <div class="report-card-header">
+
                 <div class="report-card-icon">
                     <i class="bi ${icono}"></i>
                 </div>
 
                 <h3>${escaparHTML(titulo)}</h3>
+
             </div>
 
             <div class="report-card-body">
-                ${bodyHtml || '<p class="mb-0 text-secondary">Sin contenido.</p>'}
+
+                ${bodyHtml ||
+                    '<p class="mb-0 text-secondary">Sin contenido.</p>'}
+
             </div>
+
         </article>
     `;
 }
 
+/* =========================
+   14. PLAN DE INVESTIGACIÓN
+========================= */
 
 function renderPlanCard(body) {
+
     const bullets = extractBullets(body);
 
     let contenido = "";
 
     if (bullets.length) {
+
         contenido = `
             <div class="plan-grid">
+
                 ${bullets.map((item, index) => `
                     <div class="plan-step">
-                        <div class="plan-number">${index + 1}</div>
+
+                        <div class="plan-number">
+                            ${index + 1}
+                        </div>
+
                         <p>${escaparHTML(item)}</p>
+
                     </div>
                 `).join("")}
+
             </div>
         `;
+
     } else {
+
         contenido = markdownToBasicHtml(body);
     }
 
@@ -445,24 +796,36 @@ function renderPlanCard(body) {
     );
 }
 
+/* =========================
+   15. HALLAZGOS PRINCIPALES
+========================= */
 
 function renderFindingsCard(body) {
+
     const hallazgos = parseHallazgos(body);
 
     let contenido = "";
 
     if (hallazgos.length) {
+
         contenido = `
             <div class="findings-showcase">
-                ${hallazgos.map((hallazgo, index) => {
-            const url = normalizarUrl(hallazgo.url);
-            const dominio = url ? obtenerDominio(url) : "";
-            const nombreFuente =
-                hallazgo.fuente ||
-                dominio ||
-                "Fuente consultada";
 
-            return `
+                ${hallazgos.map((hallazgo, index) => {
+
+                    const url =
+                        normalizarUrl(hallazgo.url);
+
+                    const dominio = url
+                        ? obtenerDominio(url)
+                        : "";
+
+                    const nombreFuente =
+                        hallazgo.fuente ||
+                        dominio ||
+                        "Fuente consultada";
+
+                    return `
                         <article class="finding-item">
 
                             <div class="finding-index">
@@ -474,40 +837,61 @@ function renderFindingsCard(body) {
                                 <div class="finding-top">
 
                                     <div class="finding-heading">
+
                                         <span class="finding-eyebrow">
                                             HALLAZGO
                                         </span>
 
                                         <h4 class="finding-name">
-                                            ${escaparHTML(hallazgo.nombre || `Hallazgo ${index + 1}`)}
+                                            ${escaparHTML(
+                                                hallazgo.nombre ||
+                                                `Hallazgo ${index + 1}`
+                                            )}
                                         </h4>
+
                                     </div>
 
                                     <div class="finding-status">
+
                                         <i class="bi bi-check2-circle"></i>
+
                                         Evidencia encontrada
+
                                     </div>
 
                                 </div>
 
                                 <div class="finding-description-box">
+
                                     <div class="finding-section-label">
+
                                         <i class="bi bi-card-text me-2"></i>
+
                                         Descripción
+
                                     </div>
 
                                     <p class="finding-description-text">
-                                        ${escaparHTML(hallazgo.descripcion || "Sin descripción disponible.")}
+
+                                        ${escaparHTML(
+                                            hallazgo.descripcion ||
+                                            "Sin descripción disponible."
+                                        )}
+
                                     </p>
+
                                 </div>
 
                                 <div class="finding-source-panel">
 
                                     <div class="finding-source-icon">
+
                                         <i class="bi bi-globe2"></i>
+
                                     </div>
 
                                     <div class="finding-source-info">
+
                                         <div class="finding-section-label">
                                             Fuente consultada
                                         </div>
@@ -521,6 +905,7 @@ function renderFindingsCard(body) {
                                                 ${escaparHTML(dominio)}
                                             </div>
                                         ` : ""}
+
                                     </div>
 
                                     ${url ? `
@@ -531,6 +916,7 @@ function renderFindingsCard(body) {
                                             rel="noopener noreferrer"
                                         >
                                             Abrir fuente
+
                                             <i class="bi bi-box-arrow-up-right ms-2"></i>
                                         </a>
                                     ` : `
@@ -545,10 +931,14 @@ function renderFindingsCard(body) {
 
                         </article>
                     `;
-        }).join("")}
+
+                }).join("")}
+
             </div>
         `;
+
     } else {
+
         contenido = `
             <div class="finding-fallback">
                 ${markdownToBasicHtml(body)}
@@ -563,33 +953,58 @@ function renderFindingsCard(body) {
     );
 }
 
+/* =========================
+   16. TABLA COMPARATIVA
+========================= */
 
 function renderComparisonCard(body) {
+
     const table = parseMarkdownTable(body);
 
     let contenido = "";
 
-    if (table && table.headers.length && table.rows.length) {
+    if (
+        table &&
+        table.headers.length &&
+        table.rows.length
+    ) {
+
         contenido = `
             <div class="compare-table-wrap">
+
                 <table class="compare-table">
+
                     <thead>
                         <tr>
-                            ${table.headers.map(h => `<th>${escaparHTML(h)}</th>`).join("")}
+                            ${table.headers.map(
+                                h => `<th>${escaparHTML(h)}</th>`
+                            ).join("")}
                         </tr>
                     </thead>
 
                     <tbody>
+
                         ${table.rows.map(row => `
                             <tr>
-                                ${row.map(cell => `<td>${escaparHTML(cell)}</td>`).join("")}
+                                ${row.map(
+                                    cell => `
+                                        <td>
+                                            ${escaparHTML(cell)}
+                                        </td>
+                                    `
+                                ).join("")}
                             </tr>
                         `).join("")}
+
                     </tbody>
+
                 </table>
+
             </div>
         `;
+
     } else {
+
         contenido = markdownToBasicHtml(body);
     }
 
@@ -600,41 +1015,77 @@ function renderComparisonCard(body) {
     );
 }
 
+/* =========================
+   17. COINCIDENCIAS Y DIFERENCIAS
+========================= */
 
 function renderCoincidenciasCard(body) {
+
     const bloques = parseSubsections(body);
+
     const coincidencias = extractBullets(
         bloques["Coincidencias"] || ""
     );
+
     const diferencias = extractBullets(
         bloques["Diferencias"] || ""
     );
 
     const contenido = `
         <div class="dual-lists">
+
             <div class="list-panel">
+
                 <h4>
                     <i class="bi bi-check2-circle me-2 text-success"></i>
                     Coincidencias
                 </h4>
 
                 ${coincidencias.length
-            ? `<ul>${coincidencias.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
-            : "<p class='mb-0 text-secondary'>Sin datos disponibles.</p>"
-        }
+                    ? `
+                        <ul>
+                            ${coincidencias.map(
+                                item => `
+                                    <li>${escaparHTML(item)}</li>
+                                `
+                            ).join("")}
+                        </ul>
+                    `
+                    : `
+                        <p class="mb-0 text-secondary">
+                            Sin datos disponibles.
+                        </p>
+                    `
+                }
+
             </div>
 
             <div class="list-panel differences">
+
                 <h4>
                     <i class="bi bi-arrow-left-right me-2 text-primary"></i>
                     Diferencias
                 </h4>
 
                 ${diferencias.length
-            ? `<ul>${diferencias.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
-            : "<p class='mb-0 text-secondary'>Sin datos disponibles.</p>"
-        }
+                    ? `
+                        <ul>
+                            ${diferencias.map(
+                                item => `
+                                    <li>${escaparHTML(item)}</li>
+                                `
+                            ).join("")}
+                        </ul>
+                    `
+                    : `
+                        <p class="mb-0 text-secondary">
+                            Sin datos disponibles.
+                        </p>
+                    `
+                }
+
             </div>
+
         </div>
     `;
 
@@ -645,12 +1096,22 @@ function renderCoincidenciasCard(body) {
     );
 }
 
+/* =========================
+   18. TENDENCIAS
+========================= */
 
 function renderTrendsCard(body) {
+
     const bullets = extractBullets(body);
 
     const contenido = bullets.length
-        ? `<ul class="trend-list">${bullets.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`
+        ? `
+            <ul class="trend-list">
+                ${bullets.map(
+                    item => `<li>${escaparHTML(item)}</li>`
+                ).join("")}
+            </ul>
+        `
         : markdownToBasicHtml(body);
 
     return renderCard(
@@ -660,36 +1121,53 @@ function renderTrendsCard(body) {
     );
 }
 
+/* =========================
+   19. FUENTES FINALES
+========================= */
 
 function renderizarFuentesFinales() {
+
     fuentesFinales.innerHTML = "";
 
     if (fuentesConsultadas.length === 0) {
+
         fuentesFinales.innerHTML = `
             <div class="col-12">
+
                 <div class="alert alert-light mb-0">
                     No se recibieron URLs de fuentes para mostrar.
                 </div>
+
             </div>
         `;
+
         return;
     }
 
     fuentesConsultadas.forEach((fuente, indice) => {
+
         const dominio = obtenerDominio(fuente.url);
-        const titulo = fuente.titulo && fuente.titulo !== fuente.url
-            ? fuente.titulo
-            : dominio;
+
+        const titulo =
+            fuente.titulo && fuente.titulo !== fuente.url
+                ? fuente.titulo
+                : dominio;
 
         const columna = document.createElement("div");
+
         columna.className = "col-md-6 col-xl-4";
 
         columna.innerHTML = `
             <div class="source-ref-card">
+
                 <div class="d-flex align-items-start gap-3">
-                    <span class="counter-pill">${indice + 1}</span>
+
+                    <span class="counter-pill">
+                        ${indice + 1}
+                    </span>
 
                     <div class="min-w-0">
+
                         <a
                             class="source-ref-link"
                             href="${escaparAtributo(fuente.url)}"
@@ -702,8 +1180,11 @@ function renderizarFuentesFinales() {
                         <div class="source-ref-url">
                             ${escaparHTML(fuente.url)}
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
         `;
 
@@ -711,49 +1192,77 @@ function renderizarFuentesFinales() {
     });
 }
 
+/* =========================
+   20. PARSER DE MARKDOWN
+========================= */
 
 function parseStructuredMarkdown(markdown) {
-    const text = markdown.replace(/\r/g, "").trim();
+
+    const text = String(markdown || "")
+        .replace(/\r/g, "")
+        .trim();
+
     const lines = text.split("\n");
 
     let title = "Reporte de investigación";
+
     const sections = {};
 
     let currentSection = null;
 
     for (const rawLine of lines) {
+
         const line = rawLine.trimEnd();
 
         if (!line.trim()) {
+
             if (currentSection) {
                 sections[currentSection] += "\n";
             }
+
             continue;
         }
 
         const titleMatch = line.match(/^#\s+(.*)$/);
+
         if (titleMatch) {
+
             title = titleMatch[1].trim();
+
             continue;
         }
 
         const sectionMatch = line.match(/^##\s+(.*)$/);
+
         if (sectionMatch) {
+
             currentSection = sectionMatch[1].trim();
+
             sections[currentSection] = "";
+
             continue;
         }
 
         if (currentSection) {
-            sections[currentSection] += (sections[currentSection] ? "\n" : "") + line;
+
+            sections[currentSection] +=
+                (sections[currentSection] ? "\n" : "") +
+                line;
         }
     }
 
-    return { title, sections };
+    return {
+        title,
+        sections
+    };
 }
 
+/* =========================
+   21. PARSER DE HALLAZGOS
+========================= */
 
 function parseHallazgos(text) {
+
     const hallazgos = [];
 
     const bloques = text
@@ -775,7 +1284,11 @@ function parseHallazgos(text) {
             (encabezadoMatch[1] || "").trim();
 
         const nombre =
-            extraerCampoHallazgo(bloque, "Nombre", ["Descripción", "Fuente", "URL"]) ||
+            extraerCampoHallazgo(
+                bloque,
+                "Nombre",
+                ["Descripción", "Fuente", "URL"]
+            ) ||
             nombreDesdeEncabezado ||
             "Hallazgo";
 
@@ -799,21 +1312,29 @@ function parseHallazgos(text) {
                 "URL"
             );
 
-        const enlaceFuente = extraerEnlaceMarkdown(fuente);
+        const enlaceFuente =
+            extraerEnlaceMarkdown(fuente);
 
         if (enlaceFuente.url && !url) {
             url = enlaceFuente.url;
         }
 
         if (enlaceFuente.markdown) {
+
             fuente = limpiarTextoFuente(
-                fuente.replace(enlaceFuente.markdown, "")
+                fuente.replace(
+                    enlaceFuente.markdown,
+                    ""
+                )
             );
+
         } else {
+
             fuente = limpiarTextoFuente(fuente);
         }
 
         if (!url) {
+
             const urlMatch = bloque.match(
                 /https?:\/\/[^\s)\]]+/i
             );
@@ -826,9 +1347,15 @@ function parseHallazgos(text) {
         url = normalizarUrl(url);
 
         hallazgos.push({
+
             nombre: limpiarMarkdownTexto(nombre),
-            descripcion: limpiarMarkdownTexto(descripcion),
+
+            descripcion: limpiarMarkdownTexto(
+                descripcion
+            ),
+
             fuente: limpiarMarkdownTexto(fuente),
+
             url
         });
     }
@@ -836,9 +1363,15 @@ function parseHallazgos(text) {
     return hallazgos;
 }
 
+/* =========================
+   22. EXTRAER CAMPOS
+========================= */
 
-function extraerCampoHallazgo(bloque, campo, siguientes = []) {
-    const campos = [campo, ...siguientes];
+function extraerCampoHallazgo(
+    bloque,
+    campo,
+    siguientes = []
+) {
 
     const inicio = new RegExp(
         `\\*\\*${escaparRegex(campo)}:\\*\\*\\s*`,
@@ -857,6 +1390,7 @@ function extraerCampoHallazgo(bloque, campo, siguientes = []) {
     let end = bloque.length;
 
     for (const siguiente of siguientes) {
+
         const resto = bloque.slice(start);
 
         const matchSiguiente = resto.match(
@@ -870,6 +1404,7 @@ function extraerCampoHallazgo(bloque, campo, siguientes = []) {
             matchSiguiente &&
             start + matchSiguiente.index < end
         ) {
+
             end = start + matchSiguiente.index;
         }
     }
@@ -877,16 +1412,20 @@ function extraerCampoHallazgo(bloque, campo, siguientes = []) {
     return bloque.slice(start, end).trim();
 }
 
-
 function escaparRegex(texto) {
+
     return String(texto).replace(
         /[.*+?^${}()|[\]\\]/g,
         "\\$&"
     );
 }
 
+/* =========================
+   23. ENLACES MARKDOWN
+========================= */
 
 function extraerEnlaceMarkdown(texto) {
+
     if (!texto) {
         return {
             markdown: "",
@@ -914,8 +1453,8 @@ function extraerEnlaceMarkdown(texto) {
     };
 }
 
-
 function limpiarTextoFuente(texto) {
+
     return String(texto || "")
         .replace(/\(\s*\)/g, "")
         .replace(/\s{2,}/g, " ")
@@ -923,18 +1462,21 @@ function limpiarTextoFuente(texto) {
         .trim();
 }
 
-
 function limpiarMarkdownTexto(texto) {
+
     return String(texto || "")
         .replace(/\*\*/g, "")
         .replace(/^[-*•]\s+/gm, "")
-        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, "$1")
+        .replace(
+            /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+            "$1"
+        )
         .replace(/\s+/g, " ")
         .trim();
 }
 
-
 function normalizarUrl(valor) {
+
     if (!valor) {
         return "";
     }
@@ -962,8 +1504,12 @@ function normalizarUrl(valor) {
         .trim();
 }
 
+/* =========================
+   24. TABLAS MARKDOWN
+========================= */
 
 function parseMarkdownTable(text) {
+
     const lines = text
         .split("\n")
         .map(line => line.trim())
@@ -984,11 +1530,14 @@ function parseMarkdownTable(text) {
         .map(splitTableRow)
         .filter(row => row.length);
 
-    return { headers, rows };
+    return {
+        headers,
+        rows
+    };
 }
 
-
 function splitTableRow(row) {
+
     return row
         .trim()
         .replace(/^\|/, "")
@@ -998,15 +1547,22 @@ function splitTableRow(row) {
         .filter(cell => cell.length > 0);
 }
 
+/* =========================
+   25. SUBSECCIONES MARKDOWN
+========================= */
 
 function parseSubsections(text) {
+
     const result = {};
+
     const regex = /^###\s+(.*)$/gm;
 
-    let matches = [];
+    const matches = [];
+
     let match;
 
     while ((match = regex.exec(text)) !== null) {
+
         matches.push({
             title: match[1].trim(),
             index: match.index,
@@ -1019,61 +1575,91 @@ function parseSubsections(text) {
     }
 
     matches.forEach((item, index) => {
+
         const start = item.end;
+
         const end = index + 1 < matches.length
             ? matches[index + 1].index
             : text.length;
 
-        result[item.title] = text.slice(start, end).trim();
+        result[item.title] =
+            text.slice(start, end).trim();
     });
 
     return result;
 }
 
+/* =========================
+   26. LISTAS MARKDOWN
+========================= */
 
 function extractBullets(text) {
+
     return text
         .split("\n")
         .map(line => line.trim())
         .filter(line => /^[-*•]\s+/.test(line))
-        .map(line => line.replace(/^[-*•]\s+/, "").trim());
+        .map(
+            line => line
+                .replace(/^[-*•]\s+/, "")
+                .trim()
+        );
 }
 
+/* =========================
+   27. MARKDOWN A HTML
+========================= */
 
 function markdownToBasicHtml(text) {
+
     if (!text || !text.trim()) {
         return '<p class="mb-0 text-secondary">Sin contenido.</p>';
     }
 
     const lines = text.split("\n");
+
     let html = "";
     let inList = false;
 
     for (let raw of lines) {
+
         const line = raw.trim();
 
         if (!line) {
+
             if (inList) {
                 html += "</ul>";
                 inList = false;
             }
+
             continue;
         }
 
         if (/^[-*•]\s+/.test(line)) {
+
             if (!inList) {
                 html += "<ul>";
                 inList = true;
             }
 
-            html += `<li>${formatInlineMarkdown(line.replace(/^[-*•]\s+/, ""))}</li>`;
+            html += `
+                <li>
+                    ${formatInlineMarkdown(
+                        line.replace(/^[-*•]\s+/, "")
+                    )}
+                </li>
+            `;
+
         } else {
+
             if (inList) {
                 html += "</ul>";
                 inList = false;
             }
 
-            html += `<p>${formatInlineMarkdown(line)}</p>`;
+            html += `
+                <p>${formatInlineMarkdown(line)}</p>
+            `;
         }
     }
 
@@ -1084,23 +1670,28 @@ function markdownToBasicHtml(text) {
     return html;
 }
 
-
 function formatInlineMarkdown(text) {
+
     return escaparHTML(text)
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        .replace(
+            /\*\*(.+?)\*\*/g,
+            "<strong>$1</strong>"
+        );
 }
 
-
 function limpiarMarkdownBasico(text) {
+
     return text
         .replace(/^#{1,6}\s+/gm, "")
         .replace(/\*\*/g, "")
         .replace(/\|/g, " | ");
 }
 
-
 function extraerResumen(texto) {
-    const clean = limpiarMarkdownBasico(texto).replace(/\s+/g, " ").trim();
+
+    const clean = limpiarMarkdownBasico(texto)
+        .replace(/\s+/g, " ")
+        .trim();
 
     if (!clean) {
         return "Resumen generado a partir de las fuentes consultadas.";
@@ -1111,37 +1702,63 @@ function extraerResumen(texto) {
         : clean;
 }
 
+/* =========================
+   28. UTILIDADES
+========================= */
 
 function obtenerDominio(url) {
+
     try {
-        return new URL(url).hostname.replace(/^www\./, "");
+
+        return new URL(url)
+            .hostname
+            .replace(/^www\./, "");
+
     } catch {
+
         return url;
     }
 }
 
-
 function mostrarError(mensaje) {
-    error.textContent = mensaje || "Ocurrió un error.";
+
+    error.textContent =
+        mensaje || "Ocurrió un error.";
+
     error.classList.remove("d-none");
 
     if (!actividad.classList.contains("d-none")) {
-        estadoActual.textContent = "La investigación se interrumpió.";
+
+        estadoActual.textContent =
+            "La investigación se interrumpió.";
+    }
+
+    /* Si ocurre un error, mostrar la vista del proceso */
+
+    if (!reporteDisponible) {
+
+        mostrarVista("proceso", false);
     }
 }
 
-
 function escaparHTML(texto) {
+
     const div = document.createElement("div");
+
     div.textContent = texto ?? "";
+
     return div.innerHTML;
 }
 
-
 function escaparAtributo(texto) {
+
     return String(texto ?? "")
         .replace(/&/g, "&amp;")
         .replace(/"/g, "&quot;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 }
+
+/* ==========================================================
+   FIN DEL ARCHIVO — RADAR TIC AURORA RESEARCH
+   ========================================================== */
